@@ -1,0 +1,65 @@
+### Java / Maven ###
+target/
+*.class
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+.kotlin
+
+### IntelliJ IDEA ###
+.idea/
+out/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Logs e diagnósticos da JVM ###
+logs/
+*.log
+hs_err_pid*
+replay_pid*
+*.hprof
+
+### Variáveis de ambiente e configurações locais ###
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+application-local.properties
+application-local.yml
+application-local.yaml
+
+### Arquivos temporários ###
+*.tmp
+*.swp
+*.swo
+*~
+
+### Sistema operacional ###
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
