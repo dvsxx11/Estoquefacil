@@ -1,7 +1,7 @@
 ### Java / Maven ###
 target/
 *.class
-!.mvn/wrapper/maven-wrapper.jar
+!**/.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
@@ -34,6 +34,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Front-end ###
+node_modules/
+/front/dist/
+/front/build/
+/front/coverage/
+/front/.next/
+/front/.nuxt/
+/front/.output/
+/front/.vite/
 
 ### Logs e diagnósticos da JVM ###
 logs/
