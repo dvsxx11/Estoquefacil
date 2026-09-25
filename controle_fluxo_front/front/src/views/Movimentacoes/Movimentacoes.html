@@ -1,0 +1,228 @@
+<div class="app-shell">
+  <Navbar />
+  <div class="app-main">
+    <header class="topbar">
+      <div class="topbar-title">
+        Painel <span> / </span> <strong>Movimentações</strong>
+      </div>
+      <div class="topbar-right">
+        <span>Gestão de estoque</span>
+        <div class="avatar">{{ iniciais }}</div>
+      </div>
+    </header>
+    <main class="content">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">CONTROLE DE FLUXO</p>
+          <h1>Movimentações</h1>
+          <p class="subtitle">Acompanhe cada entrada e saída do seu estoque.</p>
+        </div>
+        <button class="primary-btn" @click="abrirFormulario">
+          ＋ Nova movimentação
+        </button>
+      </div>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Total de registros</span
+            ><span class="stat-icon blue">⇄</span>
+          </div>
+          <div class="stat-value">{{ movimentos.length }}</div>
+          <div class="stat-note">No histórico completo</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Entradas</span
+            ><span class="stat-icon green">↙</span>
+          </div>
+          <div class="stat-value">{{ entradas }}</div>
+          <div class="stat-note">Movimentações registradas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Saídas</span
+            ><span class="stat-icon amber">↗</span>
+          </div>
+          <div class="stat-value">{{ saidas }}</div>
+          <div class="stat-note">Movimentações registradas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Unidades movimentadas</span
+            ><span class="stat-icon purple">◫</span>
+          </div>
+          <div class="stat-value">{{ unidades }}</div>
+          <div class="stat-note">Entradas e saídas</div>
+        </div>
+      </div>
+      <div v-if="erro" class="feedback error" role="alert">{{ erro }}</div>
+      <div v-if="sucesso" class="feedback success" role="status">
+        {{ sucesso }}
+      </div>
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Histórico de movimentações</h2>
+            <p>Consulte as operações mais recentes do estoque</p>
+          </div>
+          <div class="toolbar">
+            <label class="search-box"
+              ><span>⌕</span
+              ><input
+                v-model="busca"
+                type="search"
+                placeholder="Buscar produto"
+                aria-label="Buscar produto" /></label
+            ><select
+              v-model="filtro"
+              class="filter-select"
+              aria-label="Filtrar tipo"
+            >
+              <option value="todos">Todos os tipos</option>
+              <option value="ENTRADA">Entradas</option>
+              <option value="SAIDA">Saídas</option></select
+            ><button
+              class="secondary-btn"
+              :disabled="carregando"
+              @click="carregar"
+            >
+              ↻ Atualizar
+            </button>
+          </div>
+        </div>
+        <div v-if="carregando" class="empty-state">
+          Carregando movimentações...
+        </div>
+        <div v-else-if="filtrados.length" class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>PRODUTO</th>
+                <th>TIPO</th>
+                <th>QUANTIDADE</th>
+                <th>VALOR TOTAL</th>
+                <th>RESPONSÁVEL</th>
+                <th>DATA</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="mov in filtrados" :key="mov.id">
+                <td>
+                  <span class="cell-main">{{ mov.nomeProduto }}</span
+                  ><span class="cell-sub"
+                    >{{ mov.observacao || `Produto #${mov.produtoId}` }}</span
+                  >
+                </td>
+                <td>
+                  <span class="badge" :class="mov.tipo==='ENTRADA'?'in':'out'"
+                    >{{ mov.tipo==='ENTRADA'?'Entrada':'Saída' }}</span
+                  >
+                </td>
+                <td class="cell-main">
+                  {{ mov.tipo==='ENTRADA'?'+':'−' }}{{ mov.quantidade }} un.
+                </td>
+                <td>{{ moeda(mov.valorTotal) }}</td>
+                <td>{{ mov.nomeUsuario || '—' }}</td>
+                <td>{{ dataHora(mov.dataHora) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else class="empty-state">
+          <span class="empty-icon">⇄</span
+          ><strong v-if="movimentos.length">Nenhum resultado encontrado</strong>
+          <strong v-else>Nenhuma movimentação registrada</strong>
+          <span v-if="movimentos.length">Tente outra busca ou filtro.</span>
+          <span v-else>Registre uma entrada ou saída para começar.</span>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div
+    v-if="modalAberto"
+    class="modal-backdrop"
+    @click.self="modalAberto=false"
+  >
+    <form class="modal" @submit.prevent="salvar">
+      <div class="modal-head">
+        <div>
+          <h2>Nova movimentação</h2>
+          <p>Registre a entrada ou saída de um produto.</p>
+        </div>
+        <button
+          class="icon-btn"
+          type="button"
+          @click="modalAberto=false"
+          aria-label="Fechar"
+        >
+          ×
+        </button>
+      </div>
+      <div v-if="erroModal" class="feedback error" role="alert">
+        {{ erroModal }}
+      </div>
+      <div class="form-grid">
+        <div class="field full">
+          <label for="produto">Produto *</label
+          ><select id="produto" v-model.number="form.produtoId" required>
+            <option value="" disabled>Selecione um produto</option>
+            <option
+              v-for="produto in produtos"
+              :key="produto.id"
+              :value="produto.id"
+            >
+              {{ produto.nome }} ({{ produto.quantidadeAtual }} em estoque)
+            </option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="tipo">Tipo *</label
+          ><select id="tipo" v-model="form.tipo" required>
+            <option value="ENTRADA">Entrada</option>
+            <option value="SAIDA">Saída</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="quantidade">Quantidade *</label
+          ><input
+            id="quantidade"
+            v-model.number="form.quantidade"
+            type="number"
+            min="1"
+            required
+          />
+        </div>
+        <div class="field full">
+          <label for="preco">Preço unitário (R$) *</label
+          ><input
+            id="preco"
+            v-model.number="form.precoUnitario"
+            type="number"
+            min="0"
+            step="0.01"
+            required
+          />
+        </div>
+        <div class="field full">
+          <label for="observacao">Observação</label
+          ><textarea
+            id="observacao"
+            v-model.trim="form.observacao"
+            placeholder="Descreva o motivo da movimentação"
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="secondary-btn" @click="modalAberto=false">
+          Cancelar</button
+        ><button
+          type="submit"
+          class="primary-btn"
+          :disabled="salvando || !produtos.length"
+        >
+          {{ salvando?'Salvando...':'Registrar movimentação' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

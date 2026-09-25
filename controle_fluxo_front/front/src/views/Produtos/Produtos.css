@@ -1,0 +1,12 @@
+.topbar-title span {
+  color: #c9c9c9;
+  margin: 0 7px;
+}
+.cell-sub {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.table-wrap {
+  min-height: 120px;
+}

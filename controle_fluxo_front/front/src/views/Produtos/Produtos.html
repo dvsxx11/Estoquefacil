@@ -1,0 +1,242 @@
+<div class="app-shell">
+  <Navbar />
+  <div class="app-main">
+    <header class="topbar">
+      <div class="topbar-title">
+        Painel <span> / </span> <strong>Produtos</strong>
+      </div>
+      <div class="topbar-right">
+        <span>Gestão de estoque</span>
+        <div class="avatar">{{ iniciais }}</div>
+      </div>
+    </header>
+    <main class="content">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">VISÃO GERAL</p>
+          <h1>Produtos</h1>
+          <p class="subtitle">
+            Gerencie seu catálogo e acompanhe os níveis de estoque.
+          </p>
+        </div>
+        <button class="primary-btn" @click="abrirFormulario">
+          ＋ Novo produto
+        </button>
+      </div>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Total de produtos</span
+            ><span class="stat-icon blue">▦</span>
+          </div>
+          <div class="stat-value">{{ produtos.length }}</div>
+          <div class="stat-note">Itens cadastrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Em estoque</span
+            ><span class="stat-icon green">↗</span>
+          </div>
+          <div class="stat-value">{{ emEstoque }}</div>
+          <div class="stat-note">Produtos disponíveis</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Estoque baixo</span
+            ><span class="stat-icon amber">!</span>
+          </div>
+          <div class="stat-value">{{ estoqueBaixo }}</div>
+          <div class="stat-note">Precisam de atenção</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Unidades totais</span
+            ><span class="stat-icon purple">◫</span>
+          </div>
+          <div class="stat-value">{{ unidades }}</div>
+          <div class="stat-note">No estoque atual</div>
+        </div>
+      </div>
+      <div v-if="erro" class="feedback error" role="alert">{{ erro }}</div>
+      <div v-if="sucesso" class="feedback success" role="status">
+        {{ sucesso }}
+      </div>
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Lista de produtos</h2>
+            <p>Visualize e encontre os itens do seu catálogo</p>
+          </div>
+          <div class="toolbar">
+            <label class="search-box"
+              ><span>⌕</span
+              ><input
+                v-model="busca"
+                type="search"
+                placeholder="Buscar produto ou SKU"
+                aria-label="Buscar produto ou SKU" /></label
+            ><select
+              v-model="filtro"
+              class="filter-select"
+              aria-label="Filtrar estoque"
+            >
+              <option value="todos">Todos os itens</option>
+              <option value="baixo">Estoque baixo</option>
+              <option value="sem">Sem estoque</option></select
+            ><button
+              class="secondary-btn"
+              @click="carregar"
+              :disabled="carregando"
+            >
+              ↻ Atualizar
+            </button>
+          </div>
+        </div>
+        <div v-if="carregando" class="empty-state">Carregando produtos...</div>
+        <div v-else-if="filtrados.length" class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>PRODUTO</th>
+                <th>SKU</th>
+                <th>PREÇO DE VENDA</th>
+                <th>QUANTIDADE</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="produto in filtrados" :key="produto.id">
+                <td>
+                  <span class="cell-main">{{ produto.nome }}</span
+                  ><span class="cell-sub"
+                    >{{ produto.descricao || 'Sem descrição' }}</span
+                  >
+                </td>
+                <td>{{ produto.sku || '—' }}</td>
+                <td>{{ moeda(produto.precoVenda) }}</td>
+                <td class="cell-main">
+                  {{ produto.quantidadeAtual ?? 0 }} un.
+                </td>
+                <td>
+                  <span class="badge" :class="statusClasse(produto)"
+                    >{{ statusTexto(produto) }}</span
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else class="empty-state">
+          <span class="empty-icon">▦</span
+          ><strong
+            >{{ produtos.length ? 'Nenhum resultado encontrado' : 'Seu catálogo está vazio' }}</strong
+          ><span
+            >{{ produtos.length ? 'Tente outra busca ou filtro.' : 'Cadastre seu primeiro produto para começar.' }}</span
+          >
+        </div>
+      </section>
+    </main>
+  </div>
+  <div
+    v-if="modalAberto"
+    class="modal-backdrop"
+    @click.self="modalAberto=false"
+  >
+    <form class="modal" @submit.prevent="salvar">
+      <div class="modal-head">
+        <div>
+          <h2>Novo produto</h2>
+          <p>Preencha os dados para adicionar ao catálogo.</p>
+        </div>
+        <button
+          class="icon-btn"
+          type="button"
+          @click="modalAberto=false"
+          aria-label="Fechar"
+        >
+          ×
+        </button>
+      </div>
+      <div v-if="erroModal" class="feedback error" role="alert">
+        {{ erroModal }}
+      </div>
+      <div class="form-grid">
+        <div class="field full">
+          <label for="nome">Nome do produto *</label
+          ><input
+            id="nome"
+            v-model.trim="form.nome"
+            required
+            placeholder="Ex.: Caderno A5"
+          />
+        </div>
+        <div class="field">
+          <label for="sku">SKU *</label
+          ><input
+            id="sku"
+            v-model.trim="form.sku"
+            required
+            placeholder="Ex.: CAD-A5-001"
+          />
+        </div>
+        <div class="field">
+          <label for="quantidade">Quantidade inicial</label
+          ><input
+            id="quantidade"
+            v-model.number="form.quantidadeAtual"
+            type="number"
+            min="0"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="custo">Preço de custo *</label
+          ><input
+            id="custo"
+            v-model.number="form.precoCusto"
+            type="number"
+            min="0"
+            step="0.01"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="venda">Preço de venda *</label
+          ><input
+            id="venda"
+            v-model.number="form.precoVenda"
+            type="number"
+            min="0"
+            step="0.01"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="minimo">Estoque mínimo</label
+          ><input
+            id="minimo"
+            v-model.number="form.estoqueMinimo"
+            type="number"
+            min="0"
+            required
+          />
+        </div>
+        <div class="field full">
+          <label for="descricao">Descrição</label
+          ><textarea
+            id="descricao"
+            v-model.trim="form.descricao"
+            placeholder="Detalhes opcionais do produto"
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="secondary-btn" @click="modalAberto=false">
+          Cancelar</button
+        ><button type="submit" class="primary-btn" :disabled="salvando">
+          {{ salvando ? 'Salvando...' : 'Cadastrar produto' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

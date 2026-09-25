@@ -1,0 +1,87 @@
+<div class="login-page">
+  <div class="login-feature">
+    <div class="login-brand">
+      <span class="login-brand-mark">✦</span
+      ><span>EstoqueFacil<span class="login-dot">.</span></span>
+    </div>
+    <div class="feature-content">
+      <div class="feature-kicker">GESTÃO DE ESTOQUE SIMPLIFICADA</div>
+      <h1>Mais clareza para<br />o seu <em>negócio.</em></h1>
+      <p>
+        Organize seus produtos, acompanhe entradas e saídas e tenha seu estoque
+        sob controle em um só lugar.
+      </p>
+      <div class="feature-visual">
+        <div class="visual-top">
+          <span>Visão do estoque</span
+          ><span class="visual-pill">● Em tempo real</span>
+        </div>
+        <div class="visual-bars">
+          <div>
+            <span class="bar-label">Produtos ativos</span
+            ><span class="bar"><i style="width: 82%"></i></span>
+          </div>
+          <div>
+            <span class="bar-label">Entradas</span
+            ><span class="bar"><i style="width: 68%"></i></span>
+          </div>
+          <div>
+            <span class="bar-label">Saídas</span
+            ><span class="bar"><i style="width: 46%"></i></span>
+          </div>
+        </div>
+        <div class="visual-footer">
+          <span>Controle que acompanha você</span><span>↗</span>
+        </div>
+      </div>
+    </div>
+    <div class="feature-bottom">
+      © 2026 EstoqueFacil. Feito para simplificar.
+    </div>
+  </div>
+  <div class="login-side">
+    <div class="login-form-wrap">
+      <div class="mobile-brand">
+        <span class="login-brand-mark">✦</span> EstoqueFacil<span
+          class="login-dot"
+          >.</span
+        >
+      </div>
+      <div class="welcome-icon">↗</div>
+      <p class="form-kicker">BEM-VINDO DE VOLTA</p>
+      <h2>Acesse sua conta</h2>
+      <p class="form-intro">
+        Entre com seus dados para continuar gerenciando seu estoque.
+      </p>
+      <form class="login-form" @submit.prevent="fazerLogin">
+        <div class="input-group">
+          <label for="email">E-mail</label
+          ><input
+            id="email"
+            v-model.trim="email"
+            type="email"
+            autocomplete="username"
+            placeholder="voce@empresa.com"
+            required
+          />
+        </div>
+        <div class="input-group">
+          <label for="senha">Senha</label
+          ><input
+            id="senha"
+            v-model="senha"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Digite sua senha"
+            required
+          />
+        </div>
+        <p v-if="erro" class="error-msg" role="alert">{{ erro }}</p>
+        <button type="submit" :disabled="loading">
+          {{ loading ? 'Entrando...' : 'Entrar na plataforma' }} <span>→</span>
+        </button>
+      </form>
+      <p class="login-caption">Seu espaço para uma gestão mais simples.</p>
+    </div>
+  </div>
+</div>
