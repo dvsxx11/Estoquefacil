@@ -176,16 +176,10 @@ O backend consulta produtos e movimentações usando o ID da empresa. O registro
 - O frontend guarda a sessão em `localStorage` e a proteção de rotas verifica a presença do token; a expiração é tratada pela API.
 - O código de serviço não valida explicitamente quantidade positiva ou preço não negativo antes de registrar movimentações. Essas regras devem ser confirmadas no banco e na API antes de uso em produção.
 
-## Solução de problemas
-
-| Sintoma | Verificação |
-| --- | --- |
-| A API falha ao iniciar com erro de esquema | Confirme a conexão PostgreSQL e crie as tabelas compatíveis com as entidades; o Hibernate está em modo `validate`. |
-| Login falha | Confirme que existe um usuário e que a senha armazenada é um hash BCrypt. |
-| Frontend não alcança a API | Confira a porta `8080`, o proxy do Vite e `VITE_API_URL`. |
-| API responde `401` ou `403` | Verifique o cabeçalho `Authorization`, a validade de 24 horas do JWT e a chave usada para assiná-lo. |
-| Produtos ou movimentações não aparecem | Confira `X-Tenant-ID` e se os registros pertencem à empresa informada. |
-
 ## Licença
 
 Nenhuma licença foi definida no repositório até o momento.
+
+## Desenvolvedor
+
+Desenvolvido por **Davi Silva Soares**
