@@ -73,8 +73,8 @@
               ><input
                 v-model="busca"
                 type="search"
-                placeholder="Buscar produto ou SKU"
-                aria-label="Buscar produto ou SKU" /></label
+                placeholder="Buscar produto ou código"
+                aria-label="Buscar produto ou código" /></label
             ><select
               v-model="filtro"
               class="filter-select"
@@ -98,7 +98,7 @@
             <thead>
               <tr>
                 <th>PRODUTO</th>
-                <th>SKU</th>
+                <th>CÓDIGO</th>
                 <th>PREÇO DE VENDA</th>
                 <th>QUANTIDADE</th>
                 <th>STATUS</th>
@@ -127,12 +127,11 @@
           </table>
         </div>
         <div v-else class="empty-state">
-          <span class="empty-icon">▦</span
-          ><strong
-            >{{ produtos.length ? 'Nenhum resultado encontrado' : 'Seu catálogo está vazio' }}</strong
-          ><span
-            >{{ produtos.length ? 'Tente outra busca ou filtro.' : 'Cadastre seu primeiro produto para começar.' }}</span
-          >
+          <span class="empty-icon">▦</span>
+          <strong v-if="produtos.length">Nenhum resultado encontrado</strong>
+          <strong v-else>Seu catálogo está vazio</strong>
+          <span v-if="produtos.length">Tente outra busca ou filtro.</span>
+          <span v-else>Cadastre seu primeiro produto para começar.</span>
         </div>
       </section>
     </main>
@@ -171,12 +170,16 @@
           />
         </div>
         <div class="field">
-          <label for="sku">SKU *</label
+          <label for="sku">Código do produto *</label
           ><input
             id="sku"
             v-model.trim="form.sku"
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]+"
+            title="Digite apenas números"
             required
-            placeholder="Ex.: CAD-A5-001"
+            placeholder="Ex.: 1001"
           />
         </div>
         <div class="field">

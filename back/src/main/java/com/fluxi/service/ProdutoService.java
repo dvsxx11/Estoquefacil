@@ -7,7 +7,9 @@ import com.fluxi.dto.ProdutoDTO;
 import com.fluxi.exception.ResourceNotFoundException;
 import com.fluxi.repository.CategoriaRepository;
 import com.fluxi.repository.EmpresaRepository;
+import com.fluxi.repository.MovimentacaoRepository;
 import com.fluxi.repository.ProdutoRepository;
+import com.fluxi.exception.RegraNegocioException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -19,13 +21,16 @@ public class ProdutoService {
     private final ProdutoRepository produtoRepository;
     private final EmpresaRepository empresaRepository;
     private final CategoriaRepository categoriaRepository;
+    private final MovimentacaoRepository movimentacaoRepository;
 
     public ProdutoService(ProdutoRepository produtoRepository,
                           EmpresaRepository empresaRepository,
-                          CategoriaRepository categoriaRepository) {
+                          CategoriaRepository categoriaRepository,
+                          MovimentacaoRepository movimentacaoRepository) {
         this.produtoRepository = produtoRepository;
         this.empresaRepository = empresaRepository;
         this.categoriaRepository = categoriaRepository;
+        this.movimentacaoRepository = movimentacaoRepository;
     }
 
     @Transactional(readOnly = true)
@@ -91,6 +96,16 @@ public class ProdutoService {
 
         Produto atualizado = produtoRepository.save(produto);
         return converterParaDTO(atualizado);
+    }
+
+    @Transactional
+    public void excluir(Long id, UUID empresaId) {
+        Produto produto = produtoRepository.findWithLockByIdAndEmpresaId(id, empresaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
+        if (movimentacaoRepository.existsByProdutoIdAndEmpresaId(id, empresaId)) {
+            throw new RegraNegocioException("Exclua as movimentações deste produto antes de removê-lo.");
+        }
+        produtoRepository.delete(produto);
     }
 
     private ProdutoDTO converterParaDTO(Produto produto) {

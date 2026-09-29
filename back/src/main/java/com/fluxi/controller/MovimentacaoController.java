@@ -34,4 +34,11 @@ public class MovimentacaoController {
     public ResponseEntity<List<MovimentacaoResponseDTO>> historico(@RequestHeader("X-Tenant-ID") UUID tenantId) {
         return ResponseEntity.ok(movimentacaoService.listarHistorico(tenantId));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long id,
+                                        @RequestHeader("X-Tenant-ID") UUID tenantId) {
+        movimentacaoService.excluir(id, tenantId);
+        return ResponseEntity.noContent().build();
+    }
 }

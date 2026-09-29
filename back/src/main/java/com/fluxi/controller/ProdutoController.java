@@ -28,4 +28,11 @@ public class ProdutoController {
                                             @RequestHeader("X-Tenant-ID") UUID tenantId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(produtoService.criar(dto, tenantId));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long id,
+                                        @RequestHeader("X-Tenant-ID") UUID tenantId) {
+        produtoService.excluir(id, tenantId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -97,6 +97,10 @@ export default {
     }
     async function salvar() {
       if (salvando.value) return;
+      if (!/^[0-9]+$/.test(form.sku)) {
+        erroModal.value = "O código do produto deve conter apenas números.";
+        return;
+      }
       salvando.value = true;
       erroModal.value = "";
       try {

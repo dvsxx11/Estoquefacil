@@ -42,7 +42,7 @@ public class MovimentacaoService {
         Empresa empresa = empresaRepository.findById(empresaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Empresa não encontrada."));
 
-        Produto produto = produtoRepository.findByIdAndEmpresaId(dto.produtoId(), empresaId)
+        Produto produto = produtoRepository.findWithLockByIdAndEmpresaId(dto.produtoId(), empresaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
 
         Usuario usuario = usuarioRepository.findByIdAndEmpresaId(usuarioId, empresaId)
@@ -89,6 +89,25 @@ public class MovimentacaoService {
         return movimentacaoRepository.findAllByEmpresaIdAndProdutoIdOrderByDataHoraDesc(empresaId, produtoId).stream()
                 .map(this::converterParaResponseDTO)
                 .toList();
+    }
+
+    @Transactional
+    public void excluir(Long id, UUID empresaId) {
+        Movimentacao movimentacao = movimentacaoRepository.findWithLockByIdAndEmpresaId(id, empresaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Movimentação não encontrada."));
+        Produto produto = produtoRepository.findWithLockByIdAndEmpresaId(
+                        movimentacao.getProduto().getId(), empresaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
+
+        int saldo = produto.getQuantidadeAtual();
+        int quantidade = movimentacao.getQuantidade();
+        if (movimentacao.getTipo() == TipoMovimentacao.ENTRADA && saldo < quantidade) {
+            throw new RegraNegocioException("Não é possível excluir esta entrada: o estoque atual ficaria negativo.");
+        }
+        produto.setQuantidadeAtual(movimentacao.getTipo() == TipoMovimentacao.ENTRADA
+                ? saldo - quantidade : saldo + quantidade);
+        produtoRepository.save(produto);
+        movimentacaoRepository.delete(movimentacao);
     }
 
     private MovimentacaoResponseDTO converterParaResponseDTO(Movimentacao mov) {
